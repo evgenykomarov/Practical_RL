@@ -7,7 +7,8 @@ import numpy as np
 from gymnasium import ObservationWrapper, RewardWrapper, Wrapper
 from gymnasium.spaces import Box
 from gymnasium.wrappers import RecordVideo
-from shimmy.atari_env import AtariEnv
+# from shimmy.atari_env import AtariEnv
+from ale_py.gym.environment import AtariEnv
 from tensorboardX import SummaryWriter
 
 from env_batch import ParallelEnvBatch
