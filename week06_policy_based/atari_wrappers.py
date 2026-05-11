@@ -8,13 +8,20 @@ from gymnasium import ObservationWrapper, RewardWrapper, Wrapper
 from gymnasium.spaces import Box
 from gymnasium.wrappers import RecordVideo
 # from shimmy.atari_env import AtariEnv
-from ale_py import AtariEnv
+# from ale_py import AtariEnv
+import ale_py
+
 from tensorboardX import SummaryWriter
 
 from env_batch import ParallelEnvBatch
 
+gym.register_envs(ale_py)
 cv2.ocl.setUseOpenCL(False)
 
+def is_atari_env(env):
+    spec = getattr(env, "spec", None)
+    env_id = getattr(spec, "id", "") if spec is not None else ""
+    return env_id.startswith("ALE/") or "NoFrameskip" in env_id
 
 class EpisodicLife(Wrapper):
     """Sets done flag to true when agent dies."""
@@ -143,7 +150,7 @@ class MaxBetweenFrames(ObservationWrapper):
     """Takes maximum between two subsequent frames."""
 
     def __init__(self, env):
-        if isinstance(env.unwrapped, AtariEnv) and "NoFrameskip" not in env.spec.id:
+        if is_atari_env(env) and "NoFrameskip" not in env.spec.id and not env.spec.id.startswith("ALE/"):
             raise ValueError("MaxBetweenFrames requires NoFrameskip in atari env id")
         super().__init__(env)
         self.last_obs = None
@@ -194,7 +201,7 @@ class SkipFrames(Wrapper):
 
     def __init__(self, env, nskip=4):
         super().__init__(env)
-        if isinstance(env.unwrapped, AtariEnv) and "NoFrameskip" not in env.spec.id:
+        if is_atari_env(env) and "NoFrameskip" not in env.spec.id and not env.spec.id.startswith("ALE/"):
             raise ValueError("SkipFrames requires NoFrameskip in atari env id")
         self.nskip = nskip
 
@@ -379,8 +386,8 @@ class _thunk:
 
 def nature_dqn_env(env_id, nenvs=None, seed=None, summaries="Numpy", clip_reward=True):
     """Wraps env as in Nature DQN paper."""
-    if "NoFrameskip" not in env_id:
-        raise ValueError(f"env_id must have 'NoFrameskip' but is {env_id}")
+    # if "NoFrameskip" not in env_id:
+    #     raise ValueError(f"env_id must have 'NoFrameskip' but is {env_id}")
     if nenvs is not None:
         if seed is None:
             seed = list(range(nenvs))
